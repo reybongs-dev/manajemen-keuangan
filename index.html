@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nook — Jurnal Pemasukan & Pengeluaran Harian yang Hangat</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Outfit"', 'system-ui', 'sans-serif'],
+          },
+          borderRadius: {
+            '3xl': '24px',
+            '4xl': '32px',
+          },
+          boxShadow: {
+            'tactile': '0 10px 30px -10px rgba(42, 33, 24, 0.07), 0 2px 6px -1px rgba(42, 33, 24, 0.03)',
+            'tactile-hover': '0 18px 36px -12px rgba(42, 33, 24, 0.12), 0 4px 10px -2px rgba(42, 33, 24, 0.04)',
+            'tactile-dark': '0 12px 32px -10px rgba(0, 0, 0, 0.45), 0 2px 8px -2px rgba(0, 0, 0, 0.3)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg-canvas: #FAF7F2;
+      --bg-card: rgba(255, 255, 255, 0.88);
+      --bg-card-solid: #FFFFFF;
+      --bg-subtle: #F3EDE4;
+      --border-warm: rgba(45, 38, 30, 0.08);
+      --text-primary: #1E1B18;
+      --text-secondary: #6E665F;
+      --text-muted: #9A9188;
+      --spring: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html.dark {
+      color-scheme: dark;
+      --bg-canvas: #161412;
+      --bg-card: rgba(31, 28, 25, 0.86);
+      --bg-card-solid: #1F1C19;
+      --bg-subtle: #2A2622;
+      --border-warm: rgba(255, 245, 235, 0.08);
+      --text-primary: #F5F0EA;
+      --text-secondary: #ABA298;
+      --text-muted: #787067;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      transition: background-color 0.35s var(--spring), color 0.35s var(--spring);
+      overflow-x: hidden;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1, "cv05" 1;
+    }
+
+    /* Tactile Bento Card */
+    .bento-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border-warm);
+      border-radius: 24px;
+      transition: transform 0.35s var(--spring), box-shadow 0.35s var(--spring), background-color 0.35s var(--spring), border-color 0.35s var(--spring);
+    }
+
+    .bento-card-interactive:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Tactile Press Micro-Interaction */
+    .tactile-btn {
+      transition: transform 0.22s var(--spring), background-color 0.2s ease, box-shadow 0.22s var(--spring), border-color 0.2s ease, color 0.2s ease;
+    }
+    .tactile-btn:hover {
+      transform: translateY(-1px);
+    }
+    .tactile-btn:active {
+      transform: scale(0.965);
+    }
+
+    /* Ambient Organic Background Blobs */
+    .ambient-blob {
+      position: fixed;
+      border-radius: 9999px;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.55;
+      transition: opacity 0.4s ease;
+    }
+    html.dark .ambient-blob {
+      opacity: 0.22;
+    }
+
+    /* Smooth Entry Animation for Feed Cards */
+    @keyframes slideFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .entry-animate {
+      animation: slideFadeIn 0.35s var(--spring) forwards;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(130, 120, 110, 0.25);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(130, 120, 110, 0.4);
+    }
+
+    input[type="date"] {
+      color: var(--text-primary);
+    }
+
+    input[type="date"]::-webkit-datetime-edit {
+      color: var(--text-primary);
+    }
+
+    /* Hide native date picker icon overlay cleanly while keeping it clickable */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-amber-200 selection:text-stone-900">
+
+  <!-- Soft Ambient Organic Glows -->
+  <div class="ambient-blob w-[420px] h-[420px] bg-orange-200/70 -top-24 -left-24"></div>
+  <div class="ambient-blob w-[380px] h-[380px] bg-emerald-200/60 top-1/3 -right-24"></div>
+  <div class="ambient-blob w-[360px] h-[360px] bg-amber-100/80 bottom-0 left-1/3"></div>
+
+  <!-- Main App Container -->
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 lg:pb-12">
+
+    <!-- TOP NAVIGATION & DATE BAR -->
+    <header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-7">
+      <!-- Brand Identity -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-display font-bold text-xl sm:text-2xl tracking-tight">Nook</h1>
+              <span class="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300">Arus Harian</span>
+            </div>
+            <p class="text-xs text-[var(--text-secondary)]">Catatan keuangan harian yang hangat & manusiawi</p>
+          </div>
+        </div>
+
+        <!-- Mobile Quick Theme & Currency Controls -->
+        <div class="flex items-center gap-2 lg:hidden">
+          <button id="currencyBtnMobile" onclick="cycleCurrency()" title="Ganti Mata Uang" class="tactile-btn px-3 py-2 rounded-2xl bento-card text-xs font-bold tabular-nums">
+            $ USD
+          </button>
+          <button onclick="toggleTheme()" aria-label="Ganti tema warna" class="tactile-btn p-2.5 rounded-2xl bento-card text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+            <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+            <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Center Date Switcher & Period Rollup Pill -->
+      <div class="flex flex-wrap items-center justify-between sm:justify-center gap-2.5">
+        <!-- Day Switcher -->
+        <div class="bento-card px-1.5 py-1.5 flex items-center gap-1 shadow-tactile dark:shadow-tactile-dark">
+          <button onclick="shiftDate(-1)" aria-label="Hari Sebelumnya" class="tactile-btn flex items-center gap-1 px-3 py-2 rounded-2xl text-xs sm:text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Sblm</span>
+          </button>
+
+          <!-- Interactive Date Display + Hidden Native Calendar Picker -->
+          <div class="relative flex items-center">
+            <button type="button" class="tactile-btn flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-subtle)] font-semibold text-xs sm:text-sm">
+              <i data-lucide="calendar" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
+              <span id="selectedDateLabel">Hari Ini</span>
+            </button>
+            <input type="date" id="datePickerInput" aria-label="Pilih tanggal" onchange="setSelectedDate(this.value)" />
+          </div>
+
+          <button id="todayJumpBtn" onclick="jumpToToday()" class="hidden tactile-btn px-2.5 py-1.5 rounded-xl text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/15 hover:bg-amber-500/25">
+            Hari Ini
+          </button>
+
+          <button onclick="shiftDate(1)" aria-label="Hari Berikutnya" class="tactile-btn flex items-center gap-1 px-3 py-2 rounded-2xl text-xs sm:text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]">
+            <span class="hidden sm:inline">Lanjut</span>
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Day / Week / Month Rollup Toggle -->
+        <div class="bento-card p-1.5 flex items-center gap-1 shadow-tactile dark:shadow-tactile-dark" role="tablist" aria-label="Rentang waktu">
+          <button onclick="setTimeframe('day')" id="tf-day" class="tactile-btn px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all">Hari</button>
+          <button onclick="setTimeframe('week')" id="tf-week" class="tactile-btn px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all">Minggu</button>
+          <button onclick="setTimeframe('month')" id="tf-month" class="tactile-btn px-3 py-1.5 rounded-2xl text-xs font-semibold transition-all">Bulan</button>
+        </div>
+      </div>
+
+      <!-- Desktop Utilities -->
+      <div class="hidden lg:flex items-center gap-2.5">
+        <button id="currencyBtnDesktop" onclick="cycleCurrency()" title="Klik untuk mengganti simbol mata uang" class="tactile-btn px-3.5 py-2.5 rounded-2xl bento-card text-xs font-bold tabular-nums text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          $ USD
+        </button>
+        <button onclick="resetSampleData()" title="Pulihkan data contoh" class="tactile-btn flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bento-card text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+          <span>Data Contoh</span>
+        </button>
+        <button onclick="toggleTheme()" aria-label="Ganti tema warna" class="tactile-btn p-2.5 rounded-2xl bento-card text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+          <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ASYMMETRIC HERO BENTO SUMMARY CARDS -->
+    <section aria-label="Ringkasan Keuangan Harian" class="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5 mb-6">
+
+      <!-- 1. Net Daily Flow (Hero 5-Column Asymmetric Spotlight) -->
+      <div id="netFlowCard" class="md:col-span-12 lg:col-span-5 bento-card bento-card-interactive p-6 sm:p-7 shadow-tactile dark:shadow-tactile-dark relative overflow-hidden flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <span id="netPeriodBadge" class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 mb-1.5">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Arus Bersih Harian</span>
+            </span>
+            <div id="netAmountDisplay" class="font-display font-bold text-3xl sm:text-4xl tracking-tight tabular-nums mt-0.5">
+              +$0.00
+            </div>
+          </div>
+          <span id="netStatusPill" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-800 dark:text-amber-200 whitespace-nowrap">
+            Seimbang ✨
+          </span>
+        </div>
+
+        <!-- Visual Inflow vs Outflow Ratio Bar -->
+        <div class="mt-6">
+          <div class="flex items-center justify-between text-xs text-[var(--text-secondary)] mb-2">
+            <span id="netInsightText">Awal hari yang tenang dan seimbang.</span>
+            <span id="savingsRateLabel" class="font-semibold tabular-nums">0% tersimpan</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-[var(--bg-subtle)] overflow-hidden flex p-0.5">
+            <div id="incomeRatioBar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width: 50%"></div>
+            <div id="expenseRatioBar" class="h-full rounded-full bg-[#E05A47] transition-all duration-500 ml-0.5" style="width: 50%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Total Income Card -->
+      <div class="md:col-span-6 lg:col-span-3 bento-card bento-card-interactive p-6 shadow-tactile dark:shadow-tactile-dark flex flex-col justify-between border-emerald-500/15">
+        <div class="flex items-center justify-between">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+          <span id="incomeCountBadge" class="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 tabular-nums">
+            0 pemasukan
+          </span>
+        </div>
+        <div class="mt-5">
+          <p id="incomeLabel" class="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Pemasukan Harian</p>
+          <p id="incomeAmountDisplay" class="font-display font-bold text-2xl sm:text-3xl text-emerald-600 dark:text-emerald-400 tabular-nums mt-1">
+            $0.00
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Total Expenditure Card -->
+      <div class="md:col-span-6 lg:col-span-4 bento-card bento-card-interactive p-6 shadow-tactile dark:shadow-tactile-dark flex flex-col justify-between border-rose-500/15">
+        <div class="flex items-center justify-between">
+          <div class="w-10 h-10 rounded-2xl bg-[#E05A47]/15 text-[#E05A47] dark:text-rose-400 flex items-center justify-center">
+            <i data-lucide="trending-down" class="w-5 h-5"></i>
+          </div>
+          <span id="expenseCountBadge" class="text-xs font-medium px-2.5 py-1 rounded-full bg-[#E05A47]/10 text-[#C84634] dark:text-rose-300 tabular-nums">
+            0 pengeluaran
+          </span>
+        </div>
+        <div class="mt-5 flex items-end justify-between gap-2">
+          <div>
+            <p id="expenseLabel" class="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Pengeluaran Harian</p>
+            <p id="expenseAmountDisplay" class="font-display font-bold text-2xl sm:text-3xl text-[#E05A47] dark:text-rose-400 tabular-nums mt-1">
+              $0.00
+            </p>
+          </div>
+          <button onclick="focusQuickAdd('expense')" class="tactile-btn text-xs font-semibold px-3 py-2 rounded-2xl bg-[#E05A47]/10 text-[#C84634] dark:text-rose-300 hover:bg-[#E05A47]/20">
+            + Catat Keluar
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- MAIN ASYMMETRIC BENTO WORKSPACE (5 Cols Left / 7 Cols Right) -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (5 Cols): Quick-Log Studio + Category Donut Breakdown -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- TACTILE QUICK-LOG CARD -->
+        <section id="quickLogSection" aria-label="Catat Transaksi" class="bento-card p-6 sm:p-7 shadow-tactile dark:shadow-tactile-dark">
+          <div class="flex items-center justify-between mb-4">
+            <h2 id="formHeading" class="font-display font-bold text-lg tracking-tight">Catat Cepat</h2>
+            <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden tactile-btn text-xs font-semibold px-2.5 py-1 rounded-xl bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+              Batal Edit
+            </button>
+          </div>
+
+          <!-- Expense / Income Tactile Pill Switcher -->
+          <div class="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[var(--bg-subtle)] mb-4" role="tablist">
+            <button type="button" id="typeExpenseBtn" onclick="setEntryType('expense')" class="tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-[#E05A47] text-white shadow-sm">
+              <span>Pengeluaran</span>
+            </button>
+            <button type="button" id="typeIncomeBtn" onclick="setEntryType('income')" class="tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-[var(--text-secondary)]">
+              <span>Pemasukan</span>
+            </button>
+          </div>
+
+          <!-- ONE-TAP QUICK HABITS BAR -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Kebiasaan Sekali Ketuk</span>
+              <span class="text-[11px] text-[var(--text-muted)]">Ketuk untuk isi otomatis</span>
+            </div>
+            <div id="quickHabitsBar" class="flex flex-wrap gap-1.5">
+              <!-- Populated dynamically based on Expense vs Income -->
+            </div>
+          </div>
+
+          <!-- TRANSACTION FORM -->
+          <form id="transactionForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+            <!-- Large Tactile Amount Input -->
+            <div>
+              <label for="amountInput" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Nominal</label>
+              <div class="relative flex items-center">
+                <span id="formCurrencySymbol" class="absolute left-4 font-display font-bold text-xl text-[var(--text-muted)] pointer-events-none">$</span>
+                <input
+                  type="number"
+                  id="amountInput"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  placeholder="0.00"
+                  class="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/60 focus:bg-[var(--bg-card-solid)] outline-none font-display font-bold text-2xl tabular-nums transition-all"
+                />
+              </div>
+            </div>
+
+            <!-- Title / What was this for? -->
+            <div>
+              <label for="titleInput" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5">Untuk keperluan apa?</label>
+              <input
+                type="text"
+                id="titleInput"
+                required
+                maxlength="60"
+                placeholder="mis. Es Kopi Susu, Proyek Freelance..."
+                class="w-full px-4 py-3 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/60 focus:bg-[var(--bg-card-solid)] outline-none text-sm font-medium transition-all"
+              />
+            </div>
+
+            <!-- Interactive Everyday Category Selector -->
+            <div>
+              <label class="block text-xs font-semibold text-[var(--text-secondary)] mb-2">Kategori</label>
+              <div id="categoryGrid" class="grid grid-cols-2 sm:grid-cols-2 gap-2">
+                <!-- Populated dynamically with tactile category buttons -->
+              </div>
+            </div>
+
+            <!-- Optional Note & Time Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div class="sm:col-span-2">
+                <label for="noteInput" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Catatan <span class="font-normal text-[var(--text-muted)]">(opsional)</span></label>
+                <input
+                  type="text"
+                  id="noteInput"
+                  maxlength="80"
+                  placeholder="Tambahkan catatan singkat..."
+                  class="w-full px-3.5 py-2.5 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/60 focus:bg-[var(--bg-card-solid)] outline-none text-xs transition-all"
+                />
+              </div>
+              <div>
+                <label for="timeInput" class="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Waktu</label>
+                <input
+                  type="time"
+                  id="timeInput"
+                  class="w-full px-3 py-2.5 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/60 focus:bg-[var(--bg-card-solid)] outline-none text-xs tabular-nums transition-all"
+                />
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              id="submitEntryBtn"
+              class="tactile-btn w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-white bg-[#E05A47] hover:bg-[#cf4c39] shadow-lg shadow-[#E05A47]/25 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span id="submitBtnLabel">Tambah Pengeluaran</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- VISUAL INSIGHTS: INTERACTIVE DONUT CHART & CATEGORY BARS -->
+        <section aria-label="Rincian Pengeluaran" class="bento-card p-6 sm:p-7 shadow-tactile dark:shadow-tactile-dark">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="font-display font-bold text-lg tracking-tight">Ke Mana Uang Pergi</h2>
+              <p id="chartSubtitle" class="text-xs text-[var(--text-secondary)]">Rincian kategori untuk hari terpilih</p>
+            </div>
+            <span id="chartTotalPill" class="text-xs font-bold tabular-nums px-3 py-1 rounded-full bg-[var(--bg-subtle)]">
+              $0.00
+            </span>
+          </div>
+
+          <!-- Interactive SVG Donut + Center Readout -->
+          <div id="donutContainer" class="flex flex-col sm:flex-row items-center gap-6 my-2">
+            <div class="relative w-44 h-44 shrink-0 flex items-center justify-center">
+              <svg id="donutSvg" viewBox="0 0 160 160" class="w-full h-full -rotate-90 overflow-visible">
+                <!-- Background Ring -->
+                <circle cx="80" cy="80" r="58" fill="none" stroke="currentColor" stroke-width="18" class="text-[var(--bg-subtle)]" />
+                <!-- Dynamic Segments Group -->
+                <g id="donutSegments"></g>
+              </svg>
+              <!-- Center Readout -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-5 pointer-events-none">
+                <span id="donutCenterLabel" class="text-[11px] font-semibold text-[var(--text-muted)] leading-tight truncate max-w-[96px]">Total Keluar</span>
+                <span id="donutCenterValue" class="font-display font-bold text-base tabular-nums mt-0.5">$0.00</span>
+              </div>
+            </div>
+
+            <!-- Interactive Category Legend & Progress Bars -->
+            <div id="categoryBreakdownList" class="w-full space-y-2.5">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN (7 Cols): Live Transaction Feed + Search & Filter -->
+      <section aria-label="Daftar Transaksi Langsung" class="lg:col-span-7 bento-card p-6 sm:p-7 shadow-tactile dark:shadow-tactile-dark">
+
+        <!-- Feed Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h2 id="feedHeading" class="font-display font-bold text-xl tracking-tight">Jurnal Hari Ini</h2>
+              <span id="feedCountBadge" class="text-xs font-bold tabular-nums px-2.5 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)]">0</span>
+            </div>
+            <p id="feedSubheading" class="text-xs text-[var(--text-secondary)] mt-0.5">Setiap kopi, makan, dan pencapaian dalam satu aliran tenang</p>
+          </div>
+
+          <button onclick="resetSampleData()" class="lg:hidden self-start tactile-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-subtle)] text-xs font-medium text-[var(--text-secondary)]">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset Data Contoh</span>
+          </button>
+        </div>
+
+        <!-- Instant Search & Filter Controls -->
+        <div class="space-y-3 mb-6">
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <!-- Search Bar -->
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-4 h-4 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input
+                type="text"
+                id="searchInput"
+                oninput="handleFilterChange()"
+                placeholder="Cari kopi, makan siang, catatan..."
+                class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/50 focus:bg-[var(--bg-card-solid)] outline-none text-xs sm:text-sm transition-all"
+              />
+            </div>
+
+            <!-- Category Filter Dropdown -->
+            <div class="relative sm:w-52">
+              <select
+                id="categoryFilterSelect"
+                onchange="handleFilterChange()"
+                aria-label="Filter berdasarkan kategori"
+                class="w-full appearance-none px-3.5 py-2.5 pr-9 rounded-2xl bg-[var(--bg-subtle)] border border-transparent focus:border-amber-500/50 outline-none text-xs sm:text-sm font-medium cursor-pointer"
+              >
+                <option value="all">Semua Kategori</option>
+              </select>
+              <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-[var(--text-muted)] absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+          </div>
+
+          <!-- Type Filter Pills -->
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5">
+              <button onclick="setTypeFilter('all')" id="filter-all" class="tactile-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all">Semua</button>
+              <button onclick="setTypeFilter('expense')" id="filter-expense" class="tactile-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all">Hanya Pengeluaran</button>
+              <button onclick="setTypeFilter('income')" id="filter-income" class="tactile-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all">Hanya Pemasukan</button>
+            </div>
+
+            <button id="clearFiltersBtn" onclick="clearFilters()" class="hidden text-xs font-semibold text-amber-700 dark:text-amber-300 hover:underline">
+              Hapus filter
+            </button>
+          </div>
+        </div>
+
+        <!-- LIVE TRANSACTION FEED LIST -->
+        <div id="transactionFeed" class="space-y-3">
+          <!-- Transaction Cards rendered dynamically -->
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <!-- MOBILE FLOATING QUICK-ADD ACTION BUTTON -->
+  <button
+    onclick="focusQuickAdd()"
+    aria-label="Tambah Transaksi Cepat"
+    class="lg:hidden tactile-btn fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-[#E05A47] to-amber-500 text-white shadow-xl shadow-orange-600/30 flex items-center justify-center"
+  >
+    <i data-lucide="plus" class="w-6 h-6"></i>
+  </button>
+
+  <!-- UNDO / NOTIFICATION TOAST -->
+  <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 translate-y-4">
+    <div class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900 shadow-xl text-xs sm:text-sm font-medium">
+      <span id="toastMessage">Catatan dihapus</span>
+      <button id="toastUndoBtn" onclick="undoLastDelete()" class="hidden inline-flex items-center gap-1 font-bold text-amber-400 dark:text-amber-600 hover:underline">
+        <i data-lucide="undo-2" class="w-3.5 h-3.5"></i>
+        <span>Urungkan</span>
+      </button>
+    </div>
+  </div>
+    <script>
+    // =========================================================================
+    // 1. EVERYDAY HUMAN CATEGORIES & QUICK HABITS CONFIGURATION
+    // =========================================================================
+    const CATEGORIES = {
+      expense: [
+        { id: 'coffee',        label: 'Kopi, Teh & roko',          emoji: '☕', icon: 'coffee',         color: '#C27838', bg: 'rgba(194, 120, 56, 0.14)' },
+        { id: 'meals',         label: 'Makan & Jajan di Luar',        emoji: '🍜', icon: 'utensils',       color: '#E05A47', bg: 'rgba(224, 90, 71, 0.14)' },
+        { id: 'groceries',     label: 'Belanja Harian & Rumah Tangga',emoji: '🛒', icon: 'shopping-cart',  color: '#4D8B55', bg: 'rgba(77, 139, 85, 0.14)' },
+        { id: 'transport',     label: 'Transportasi, Ojol & Bensin',  emoji: '⛽', icon: 'car',            color: '#3B7A9E', bg: 'rgba(59, 122, 158, 0.14)' },
+        { id: 'bills',         label: 'Tagihan, Kuota & Langganan',   emoji: '📱', icon: 'smartphone',     color: '#6366F1', bg: 'rgba(99, 102, 241, 0.14)' },
+        { id: 'shopping',      label: 'Belanja & Perawatan Diri',     emoji: '🛍️', icon: 'shopping-bag',   color: '#D9467A', bg: 'rgba(217, 70, 122, 0.14)' },
+        { id: 'entertainment', label: 'Nongkrong & Hiburan',          emoji: '🎬', icon: 'film',           color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.14)' },
+        { id: 'health',        label: 'Kesehatan & Apotek',           emoji: '💊', icon: 'heart-pulse',    color: '#EC4899', bg: 'rgba(236, 72, 153, 0.14)' }
+      ],
+      income: [
+        { id: 'salary',    label: 'Gaji / Upah',                    emoji: '💼', icon: 'briefcase',       color: '#059669', bg: 'rgba(5, 150, 105, 0.14)' },
+        { id: 'freelance', label: 'Freelance / Kerja Sampingan',    emoji: '💻', icon: 'laptop',          color: '#0D9488', bg: 'rgba(13, 148, 136, 0.14)' },
+        { id: 'allowance', label: 'Uang Saku / Transfer',           emoji: '💸', icon: 'arrow-left-right',color: '#10B981', bg: 'rgba(16, 185, 129, 0.14)' },
+        { id: 'bonus',     label: 'Bonus / Pengembalian / Hadiah',  emoji: '🎁', icon: 'gift',            color: '#16A34A', bg: 'rgba(22, 163, 74, 0.14)' }
+      ]
+    };
+
+    const QUICK_HABITS = {
+      expense: [
+        { emoji: '☕', label: 'Kopi Pagi',   title: 'Kopi Pagi',           category: 'coffee' },
+        { emoji: '🍜', label: 'Makan Siang', title: 'Makan Siang',         category: 'meals' },
+        { emoji: '⛽', label: 'Perjalanan',  title: 'Transportasi Harian', category: 'transport' },
+        { emoji: '🛒', label: 'Belanja',     title: 'Belanja Harian',      category: 'groceries' },
+        { emoji: '🎬', label: 'Nongkrong',   title: 'Nongkrong Malam',     category: 'entertainment' }
+      ],
+      income: [
+        { emoji: '💻', label: 'Proyek Klien',      title: 'Pembayaran Freelance',  category: 'freelance' },
+        { emoji: '💼', label: 'Gajian',            title: 'Gaji Masuk',            category: 'salary' },
+        { emoji: '💸', label: 'Transfer',          title: 'Transfer Masuk',        category: 'allowance' },
+        { emoji: '🎁', label: 'Cashback / Hadiah', title: 'Pengembalian / Hadiah', category: 'bonus' }
+      ]
+    };
+
+    const CURRENCIES = [
+      { code: 'USD', symbol: '$' },
+      { code: 'EUR', symbol: '€' },
+      { code: 'GBP', symbol: '£' },
+      { code: 'JPY', symbol: '¥' },
+      { code: 'IDR', symbol: 'Rp' }
+    ];
+
+    const STORAGE_KEY = 'nook_daily_ledger_v1';
+    const PREFS_KEY = 'nook_daily_prefs_v1';
+
+    // =========================================================================
+    // 2. APPLICATION STATE
+    // =========================================================================
+    function toLocalDateStr(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function offsetDateStr(daysOffset) {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      return toLocalDateStr(d);
+    }
+
+    let state = {
+      entries: [],
+      selectedDate: toLocalDateStr(),
+      timeframe: 'day', // 'day' | 'week' | 'month'
+      entryType: 'expense', // 'expense' | 'income'
+      selectedCategory: 'coffee',
+      editingId: null,
+      typeFilter: 'all', // 'all' | 'expense' | 'income'
+      categoryFilter: 'all',
+      searchQuery: '',
+      currencyIndex: 0,
+      lastDeleted: null,
+      animatedValues: { income: 0, expense: 0, net: 0 }
+    };
+
+    // =========================================================================
+    // 3. REALISTIC STARTER DATA & PERSISTENCE
+    // =========================================================================
+    function generateStarterEntries() {
+      const today = toLocalDateStr();
+      const yesterday = offsetDateStr(-1);
+      const twoDaysAgo = offsetDateStr(-2);
+
+      return [
+        {
+          id: 'seed-1',
+          date: today,
+          time: '08:30',
+          type: 'expense',
+          category: 'coffee',
+          title: 'Kopi Susu Oat & Roti Kapulaga',
+          amount: 7.50,
+          note: 'Kedai kopi sudut jalan sebelum fokus kerja pagi'
+        },
+        {
+          id: 'seed-2',
+          date: today,
+          time: '09:45',
+          type: 'income',
+          category: 'freelance',
+          title: 'Termin Desain UI Sprint',
+          amount: 240.00,
+          note: 'DP 50% dari Studio K'
+        },
+        {
+          id: 'seed-3',
+          date: today,
+          time: '12:50',
+          type: 'expense',
+          category: 'meals',
+          title: 'Ramen Miso Pedas & Es Matcha',
+          amount: 16.80,
+          note: 'Makan siang bareng Maya'
+        },
+        {
+          id: 'seed-4',
+          date: today,
+          time: '18:15',
+          type: 'expense',
+          category: 'transport',
+          title: 'Ojol Pulang Sore',
+          amount: 11.20,
+          note: 'Perjalanan pulang saat hujan'
+        },
+        {
+          id: 'seed-5',
+          date: today,
+          time: '19:10',
+          type: 'expense',
+          category: 'groceries',
+          title: 'Roti Sourdough, Beri & Susu Oat',
+          amount: 28.40,
+          note: 'Stok ulang dapur segar'
+        },
+        // Yesterday sample entries so date navigation immediately shines
+        {
+          id: 'seed-6',
+          date: yesterday,
+          time: '10:00',
+          type: 'expense',
+          category: 'bills',
+          title: 'Penyimpanan Cloud & Internet Fiber',
+          amount: 42.00,
+          note: 'Autodebet bulanan'
+        },
+        {
+          id: 'seed-7',
+          date: yesterday,
+          time: '19:30',
+          type: 'expense',
+          category: 'entertainment',
+          title: 'Tiket Bioskop Indie & Popcorn',
+          amount: 24.50,
+          note: 'Nonton bareng Jumat malam'
+        },
+        {
+          id: 'seed-8',
+          date: twoDaysAgo,
+          time: '14:00',
+          type: 'income',
+          category: 'bonus',
+          title: 'Pengembalian Dana Toko Buku',
+          amount: 34.00,
+          note: 'Dikembalikan ke kartu'
+        }
+      ];
+    }
+
+    function loadFromStorage() {
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem(PREFS_KEY));
+        if (savedPrefs) {
+          if (typeof savedPrefs.currencyIndex === 'number') state.currencyIndex = savedPrefs.currencyIndex;
+          if (savedPrefs.darkMode) document.documentElement.classList.add('dark');
+        }
+
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw === null) {
+          state.entries = generateStarterEntries();
+          saveToStorage();
+        } else {
+          state.entries = JSON.parse(raw) || [];
+        }
+      } catch (err) {
+        state.entries = generateStarterEntries();
+      }
+    }
+
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.entries));
+        localStorage.setItem(PREFS_KEY, JSON.stringify({
+          currencyIndex: state.currencyIndex,
+          darkMode: document.documentElement.classList.contains('dark')
+        }));
+      } catch (e) {
+        console.warn('LocalStorage unavailable:', e);
+      }
+    }
+
+    function resetSampleData() {
+      state.entries = generateStarterEntries();
+      state.selectedDate = toLocalDateStr();
+      state.timeframe = 'day';
+      cancelEdit();
+      clearFilters();
+      saveToStorage();
+      renderAll();
+      showToast('Memulihkan jurnal contoh ✨');
+    }
+
+    // =========================================================================
+    // 4. FORMATTING & NUMBER COUNTER ANIMATION
+    // =========================================================================
+    function getCurrency() {
+      return CURRENCIES[state.currencyIndex] || CURRENCIES[0];
+    }
+
+    function formatMoney(amount, includeSign = false) {
+      const { code, symbol } = getCurrency();
+      const absVal = Math.abs(amount);
+      const formatted = code === 'JPY' || code === 'IDR'
+        ? Math.round(absVal).toLocaleString('en-US')
+        : absVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const sign = amount < 0 ? '-' : (includeSign && amount > 0 ? '+' : '');
+      return `${sign}${symbol}${formatted}`;
+    }
+
+    function animateCounter(elementId, key, targetValue, includeSign = false) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+
+      const startValue = state.animatedValues[key] || 0;
+      const duration = 420;
+      const startTime = performance.now();
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Cubic ease-out
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = startValue + (targetValue - startValue) * eased;
+
+        el.textContent = formatMoney(current, includeSign);
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          state.animatedValues[key] = targetValue;
+          el.textContent = formatMoney(targetValue, includeSign);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    // =========================================================================
+    // 5. DATE & TIMEFRAME FILTERING LOGIC
+    // =========================================================================
+    function getEntriesForPeriod() {
+      const sel = new Date(state.selectedDate + 'T00:00:00');
+
+      return state.entries.filter(entry => {
+        if (state.timeframe === 'day') {
+          return entry.date === state.selectedDate;
+        }
+        const entryDate = new Date(entry.date + 'T00:00:00');
+        if (state.timeframe === 'week') {
+          // 7-day rolling window ending on selectedDate (inclusive)
+          const diffDays = Math.round((sel - entryDate) / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays < 7;
+        }
+        if (state.timeframe === 'month') {
+          return entryDate.getFullYear() === sel.getFullYear() && entryDate.getMonth() === sel.getMonth();
+        }
+        return true;
+      });
+    }
+
+    function formatSelectedDateLabel() {
+      const todayStr = toLocalDateStr();
+      const yesterdayStr = offsetDateStr(-1);
+      const tomorrowStr = offsetDateStr(1);
+
+      const d = new Date(state.selectedDate + 'T00:00:00');
+      const shortDate = d.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+
+      if (state.selectedDate === todayStr) return `Hari Ini, ${shortDate}`;
+      if (state.selectedDate === yesterdayStr) return `Kemarin, ${shortDate}`;
+      if (state.selectedDate === tomorrowStr) return `Besok, ${shortDate}`;
+
+      return d.toLocaleDateString('id-ID', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function shiftDate(delta) {
+      const d = new Date(state.selectedDate + 'T00:00:00');
+      d.setDate(d.getDate() + delta);
+      state.selectedDate = toLocalDateStr(d);
+      renderAll();
+    }
+
+    function setSelectedDate(dateStr) {
+      if (!dateStr) return;
+      state.selectedDate = dateStr;
+      renderAll();
+    }
+
+    function jumpToToday() {
+      state.selectedDate = toLocalDateStr();
+      renderAll();
+    }
+
+    function setTimeframe(tf) {
+      state.timeframe = tf;
+      renderAll();
+    }
+
+    // =========================================================================
+    // 6. QUICK-LOG FORM, HABITS & CRUD OPERATIONS
+    // =========================================================================
+    function setEntryType(type) {
+      state.entryType = type;
+      const validCats = CATEGORIES[type];
+      if (!validCats.some(c => c.id === state.selectedCategory)) {
+        state.selectedCategory = validCats[0].id;
+      }
+      renderFormControls();
+    }
+
+    function selectCategory(catId) {
+      state.selectedCategory = catId;
+      renderCategoryGrid();
+    }
+
+    function applyQuickHabit(habitIndex) {
+      const habit = QUICK_HABITS[state.entryType][habitIndex];
+      if (!habit) return;
+
+      state.selectedCategory = habit.category;
+      document.getElementById('titleInput').value = habit.title;
+      renderCategoryGrid();
+
+      const amountEl = document.getElementById('amountInput');
+      amountEl.focus();
+      amountEl.select();
+    }
+
+    function setDefaultTimeNow() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('timeInput').value = `${hh}:${mm}`;
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const amountVal = parseFloat(document.getElementById('amountInput').value);
+      const titleVal = document.getElementById('titleInput').value.trim();
+      const noteVal = document.getElementById('noteInput').value.trim();
+      const timeVal = document.getElementById('timeInput').value || '12:00';
+
+      if (isNaN(amountVal) || amountVal <= 0 || !titleVal) return;
+
+      if (state.editingId) {
+        const idx = state.entries.findIndex(item => item.id === state.editingId);
+        if (idx !== -1) {
+          state.entries[idx] = {
+            ...state.entries[idx],
+            type: state.entryType,
+            category: state.selectedCategory,
+            title: titleVal,
+            amount: Math.round(amountVal * 100) / 100,
+            note: noteVal,
+            time: timeVal
+          };
+          showToast('Catatan diperbarui ✓');
+        }
+        cancelEdit();
+      } else {
+        const newEntry = {
+          id: 'entry-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+          date: state.selectedDate,
+          time: timeVal,
+          type: state.entryType,
+          category: state.selectedCategory,
+          title: titleVal,
+          amount: Math.round(amountVal * 100) / 100,
+          note: noteVal
+        };
+        state.entries.unshift(newEntry);
+        showToast(state.entryType === 'income' ? 'Pemasukan dicatat 🌱' : 'Pengeluaran dicatat ☕');
+      }
+
+      // Reset inputs smoothly
+      document.getElementById('amountInput').value = '';
+      document.getElementById('titleInput').value = '';
+      document.getElementById('noteInput').value = '';
+      setDefaultTimeNow();
+
+      saveToStorage();
+      renderAll();
+    }
+
+    function startEditEntry(id) {
+      const entry = state.entries.find(e => e.id === id);
+      if (!entry) return;
+
+      state.editingId = id;
+      state.entryType = entry.type;
+      state.selectedCategory = entry.category;
+
+      document.getElementById('amountInput').value = entry.amount;
+      document.getElementById('titleInput').value = entry.title;
+      document.getElementById('noteInput').value = entry.note || '';
+      document.getElementById('timeInput').value = entry.time || '12:00';
+
+      document.getElementById('formHeading').textContent = 'Edit Catatan';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+      renderFormControls();
+      document.getElementById('quickLogSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('amountInput').focus();
+    }
+
+    function cancelEdit() {
+      state.editingId = null;
+      document.getElementById('formHeading').textContent = 'Catat Cepat';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+      document.getElementById('amountInput').value = '';
+      document.getElementById('titleInput').value = '';
+      document.getElementById('noteInput').value = '';
+      setDefaultTimeNow();
+      renderFormControls();
+    }
+
+    function deleteEntry(id) {
+      const idx = state.entries.findIndex(e => e.id === id);
+      if (idx === -1) return;
+
+      const [removed] = state.entries.splice(idx, 1);
+      state.lastDeleted = { entry: removed, index: idx };
+
+      if (state.editingId === id) {
+        cancelEdit();
+      }
+
+      saveToStorage();
+      renderAll();
+      showToast(`Menghapus "${removed.title}"`, true);
+    }
+
+    function undoLastDelete() {
+      if (!state.lastDeleted) return;
+      const { entry, index } = state.lastDeleted;
+      state.entries.splice(index, 0, entry);
+      state.lastDeleted = null;
+      saveToStorage();
+      renderAll();
+      hideToast();
+    }
+    // =========================================================================
+    // 7. SEARCH & FILTER CONTROLS
+    // =========================================================================
+    function setTypeFilter(type) {
+      state.typeFilter = type;
+      renderAll();
+    }
+
+    function handleFilterChange() {
+      state.searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      state.categoryFilter = document.getElementById('categoryFilterSelect').value;
+      renderFeed();
+      updateFilterUI();
+    }
+
+    function filterByChartCategory(catId) {
+      state.categoryFilter = state.categoryFilter === catId ? 'all' : catId;
+      document.getElementById('categoryFilterSelect').value = state.categoryFilter;
+      renderFeed();
+      updateFilterUI();
+    }
+
+    function clearFilters() {
+      state.typeFilter = 'all';
+      state.categoryFilter = 'all';
+      state.searchQuery = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilterSelect').value = 'all';
+      renderAll();
+    }
+
+    function updateFilterUI() {
+      ['all', 'expense', 'income'].forEach(t => {
+        const btn = document.getElementById(`filter-${t}`);
+        const active = state.typeFilter === t;
+        btn.className = active
+          ? 'tactile-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm'
+          : 'tactile-btn px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
+      });
+
+      const hasActiveFilters = state.typeFilter !== 'all' || state.categoryFilter !== 'all' || state.searchQuery !== '';
+      document.getElementById('clearFiltersBtn').classList.toggle('hidden', !hasActiveFilters);
+    }
+
+    // =========================================================================
+    // 8. RENDERING FUNCTIONS
+    // =========================================================================
+    function getCategoryMeta(type, catId) {
+      const list = CATEGORIES[type] || [];
+      return list.find(c => c.id === catId) || list[0];
+    }
+
+    function renderHeaderControls() {
+      document.getElementById('selectedDateLabel').textContent = formatSelectedDateLabel();
+      document.getElementById('datePickerInput').value = state.selectedDate;
+
+      const isToday = state.selectedDate === toLocalDateStr();
+      document.getElementById('todayJumpBtn').classList.toggle('hidden', isToday);
+
+      ['day', 'week', 'month'].forEach(tf => {
+        const btn = document.getElementById(`tf-${tf}`);
+        const active = state.timeframe === tf;
+        btn.className = active
+          ? 'tactile-btn px-3 py-1.5 rounded-2xl text-xs font-bold bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 shadow-sm'
+          : 'tactile-btn px-3 py-1.5 rounded-2xl text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
+      });
+
+      const curr = getCurrency();
+      document.getElementById('currencyBtnDesktop').textContent = `${curr.symbol} ${curr.code}`;
+      document.getElementById('currencyBtnMobile').textContent = `${curr.symbol} ${curr.code}`;
+      document.getElementById('formCurrencySymbol').textContent = curr.symbol;
+    }
+
+    function renderSummaryCards(periodEntries) {
+      let totalIncome = 0;
+      let totalExpense = 0;
+      let incomeCount = 0;
+      let expenseCount = 0;
+
+      periodEntries.forEach(e => {
+        if (e.type === 'income') {
+          totalIncome += e.amount;
+          incomeCount++;
+        } else {
+          totalExpense += e.amount;
+          expenseCount++;
+        }
+      });
+
+      const net = totalIncome - totalExpense;
+
+      // Dynamic timeframe labels
+      const prefix = state.timeframe === 'day' ? 'Harian' : (state.timeframe === 'week' ? '7 Hari' : 'Bulanan');
+      document.getElementById('netPeriodBadge').innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Arus Bersih ${prefix}</span>`;
+      document.getElementById('incomeLabel').textContent = `Pemasukan ${prefix}`;
+      document.getElementById('expenseLabel').textContent = `Pengeluaran ${prefix}`;
+
+      animateCounter('incomeAmountDisplay', 'income', totalIncome, false);
+      animateCounter('expenseAmountDisplay', 'expense', totalExpense, false);
+      animateCounter('netAmountDisplay', 'net', net, true);
+
+      document.getElementById('incomeCountBadge').textContent = `${incomeCount} pemasukan`;
+      document.getElementById('expenseCountBadge').textContent = `${expenseCount} pengeluaran`;
+
+      // Net status pill & human narrative
+      const statusPill = document.getElementById('netStatusPill');
+      const insightText = document.getElementById('netInsightText');
+      const savingsRateLabel = document.getElementById('savingsRateLabel');
+      const netDisplay = document.getElementById('netAmountDisplay');
+
+      const totalVolume = totalIncome + totalExpense;
+      const incPct = totalVolume > 0 ? Math.round((totalIncome / totalVolume) * 100) : 50;
+      const expPct = totalVolume > 0 ? 100 - incPct : 50;
+
+      document.getElementById('incomeRatioBar').style.width = `${incPct}%`;
+      document.getElementById('expenseRatioBar').style.width = `${expPct}%`;
+
+      if (totalIncome === 0 && totalExpense === 0) {
+        statusPill.textContent = 'Lembaran Bersih 🌿';
+        statusPill.className = 'px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-800 dark:text-amber-200 whitespace-nowrap';
+        netDisplay.className = 'font-display font-bold text-3xl sm:text-4xl tracking-tight tabular-nums mt-0.5';
+        insightText.textContent = 'Siap kapan pun kamu mencatat transaksi pertama.';
+        savingsRateLabel.textContent = '0% tersimpan';
+      } else if (net >= 0) {
+        const keptPct = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 100;
+        statusPill.textContent = net > 0 ? 'Surplus Sehat ✨' : 'Seimbang Merata 🌿';
+        statusPill.className = 'px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 whitespace-nowrap';
+        netDisplay.className = 'font-display font-bold text-3xl sm:text-4xl tracking-tight tabular-nums mt-0.5 text-emerald-600 dark:text-emerald-400';
+        insightText.textContent = totalIncome > 0
+          ? `Kamu berhasil menyimpan ${keptPct}% dari pemasukan sejauh ini.`
+          : 'Saldo positif tanpa pengeluaran.';
+        savingsRateLabel.textContent = `${keptPct}% tersimpan`;
+      } else {
+        statusPill.textContent = 'Pengeluaran Tinggi 🍂';
+        statusPill.className = 'px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 whitespace-nowrap';
+        netDisplay.className = 'font-display font-bold text-3xl sm:text-4xl tracking-tight tabular-nums mt-0.5 text-indigo-600 dark:text-indigo-400';
+        insightText.textContent = `Pengeluaran melebihi pemasukan sebesar ${formatMoney(Math.abs(net))}.`;
+        savingsRateLabel.textContent = 'Arus keluar bersih';
+      }
+    }
+
+    function renderFormControls() {
+      const isExpense = state.entryType === 'expense';
+      const expBtn = document.getElementById('typeExpenseBtn');
+      const incBtn = document.getElementById('typeIncomeBtn');
+      const submitBtn = document.getElementById('submitEntryBtn');
+      const submitLabel = document.getElementById('submitBtnLabel');
+
+      if (isExpense) {
+        expBtn.className = 'tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-[#E05A47] text-white shadow-sm';
+        incBtn.className = 'tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
+        submitBtn.className = 'tactile-btn w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-white bg-[#E05A47] hover:bg-[#cf4c39] shadow-lg shadow-[#E05A47]/25 flex items-center justify-center gap-2 cursor-pointer';
+        submitLabel.textContent = state.editingId ? 'Simpan Perubahan Pengeluaran' : 'Tambah Pengeluaran';
+      } else {
+        incBtn.className = 'tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 bg-emerald-600 text-white shadow-sm';
+        expBtn.className = 'tactile-btn py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
+        submitBtn.className = 'tactile-btn w-full py-3.5 px-5 rounded-2xl font-display font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 cursor-pointer';
+        submitLabel.textContent = state.editingId ? 'Simpan Perubahan Pemasukan' : 'Tambah Pemasukan';
+      }
+
+      // Render One-Tap Quick Habits
+      const habits = QUICK_HABITS[state.entryType];
+      const habitsBar = document.getElementById('quickHabitsBar');
+      habitsBar.innerHTML = habits.map((h, idx) => `
+        <button
+          type="button"
+          onclick="applyQuickHabit(${idx})"
+          class="tactile-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[var(--bg-subtle)] hover:bg-amber-500/15 text-[var(--text-primary)] border border-transparent hover:border-amber-500/30 cursor-pointer"
+        >
+          <span>${h.emoji}</span>
+          <span>${h.label}</span>
+        </button>
+      `).join('');
+
+      renderCategoryGrid();
+    }
+
+    function renderCategoryGrid() {
+      const cats = CATEGORIES[state.entryType];
+      const grid = document.getElementById('categoryGrid');
+
+      grid.innerHTML = cats.map(cat => {
+        const selected = state.selectedCategory === cat.id;
+        return `
+          <button
+            type="button"
+            onclick="selectCategory('${cat.id}')"
+            class="tactile-btn flex items-center gap-2.5 p-2.5 rounded-2xl text-left border transition-all cursor-pointer ${
+              selected
+                ? 'bg-[var(--bg-card-solid)] border-stone-800 dark:border-stone-200 shadow-sm'
+                : 'bg-[var(--bg-subtle)]/70 border-transparent hover:bg-[var(--bg-subtle)]'
+            }"
+          >
+            <span class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm" style="background:${cat.bg}; color:${cat.color}">
+              ${cat.emoji}
+            </span>
+            <span class="text-xs font-semibold leading-snug line-clamp-2">${cat.label}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderDonutChart(periodEntries) {
+      const expenses = periodEntries.filter(e => e.type === 'expense');
+      const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+      const subtitleMap = {
+        day: 'Rincian kategori untuk hari terpilih',
+        week: 'Rincian kategori selama 7 hari terakhir',
+        month: 'Rincian kategori untuk bulan terpilih'
+      };
+      document.getElementById('chartSubtitle').textContent = subtitleMap[state.timeframe];
+      document.getElementById('chartTotalPill').textContent = formatMoney(totalSpent);
+      document.getElementById('donutCenterLabel').textContent = 'Total Keluar';
+      document.getElementById('donutCenterValue').textContent = formatMoney(totalSpent);
+
+      const segmentsGroup = document.getElementById('donutSegments');
+      const breakdownList = document.getElementById('categoryBreakdownList');
+
+      if (expenses.length === 0 || totalSpent === 0) {
+        segmentsGroup.innerHTML = '';
+        breakdownList.innerHTML = `
+          <div class="py-4 text-center sm:text-left">
+            <p class="text-xs font-semibold text-[var(--text-secondary)]">Belum ada pengeluaran tercatat pada periode ini</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">Catat kopi, makan, atau tagihan untuk melihat rincian visual.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Group by category
+      const grouped = {};
+      expenses.forEach(e => {
+        grouped[e.category] = (grouped[e.category] || 0) + e.amount;
+      });
+
+      const sorted = Object.entries(grouped)
+        .map(([catId, amount]) => ({
+          cat: getCategoryMeta('expense', catId),
+          amount,
+          pct: (amount / totalSpent) * 100
+        }))
+        .sort((a, b) => b.amount - a.amount);
+
+      const radius = 58;
+      const circumference = 2 * Math.PI * radius;
+      let cumulativePct = 0;
+
+      segmentsGroup.innerHTML = sorted.map(item => {
+        const dashLength = (item.pct / 100) * circumference;
+        const gap = sorted.length > 1 ? 3 : 0;
+        const visibleDash = Math.max(dashLength - gap, 1);
+        const dashOffset = -(cumulativePct / 100) * circumference;
+        cumulativePct += item.pct;
+
+        return `
+          <circle
+            cx="80" cy="80" r="${radius}"
+            fill="none"
+            stroke="${item.cat.color}"
+            stroke-width="18"
+            stroke-linecap="round"
+            stroke-dasharray="${visibleDash} ${circumference}"
+            stroke-dashoffset="${dashOffset}"
+            class="transition-all duration-500 cursor-pointer hover:opacity-85"
+            onmouseenter="highlightDonutSlice('${item.cat.label.replace(/'/g, "\\'")}', ${item.amount}, ${Math.round(item.pct)})"
+            onmouseleave="resetDonutCenter(${totalSpent})"
+            onclick="filterByChartCategory('${item.cat.id}')"
+          />
+        `;
+      }).join('');
+
+      breakdownList.innerHTML = sorted.slice(0, 5).map(item => {
+        const roundedPct = Math.round(item.pct);
+        const isFiltered = state.categoryFilter === item.cat.id;
+        return `
+          <div
+            onclick="filterByChartCategory('${item.cat.id}')"
+            onmouseenter="highlightDonutSlice('${item.cat.label.replace(/'/g, "\\'")}', ${item.amount}, ${roundedPct})"
+            onmouseleave="resetDonutCenter(${totalSpent})"
+            class="group cursor-pointer p-1.5 -mx-1.5 rounded-xl transition-colors ${isFiltered ? 'bg-amber-500/15' : 'hover:bg-[var(--bg-subtle)]/70'}"
+          >
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="flex items-center gap-1.5 font-semibold truncate pr-2">
+                <span>${item.cat.emoji}</span>
+                <span class="truncate">${item.cat.label}</span>
+              </span>
+              <span class="tabular-nums font-bold shrink-0">
+                ${formatMoney(item.amount)} <span class="text-[var(--text-muted)] font-normal">(${roundedPct}%)</span>
+              </span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-[var(--bg-subtle)] overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500" style="width:${item.pct}%; background:${item.cat.color}"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function highlightDonutSlice(label, amount, pct) {
+      document.getElementById('donutCenterLabel').textContent = `${label} (${pct}%)`;
+      document.getElementById('donutCenterValue').textContent = formatMoney(amount);
+    }
+
+    function resetDonutCenter(totalSpent) {
+      document.getElementById('donutCenterLabel').textContent = 'Total Keluar';
+      document.getElementById('donutCenterValue').textContent = formatMoney(totalSpent);
+    }
+
+    function populateCategoryFilterDropdown() {
+      const select = document.getElementById('categoryFilterSelect');
+      const current = state.categoryFilter;
+
+      let html = `<option value="all">Semua Kategori</option>`;
+      html += `<optgroup label="Pengeluaran Harian">`;
+      CATEGORIES.expense.forEach(c => {
+        html += `<option value="${c.id}">${c.emoji} ${c.label}</option>`;
+      });
+      html += `</optgroup><optgroup label="Sumber Pemasukan">`;
+      CATEGORIES.income.forEach(c => {
+        html += `<option value="${c.id}">${c.emoji} ${c.label}</option>`;
+      });
+      html += `</optgroup>`;
+
+      select.innerHTML = html;
+      select.value = current;
+    }
+
+    function renderFeed() {
+      const periodEntries = getEntriesForPeriod();
+
+      // Update Feed Heading
+      const headingMap = {
+        day: state.selectedDate === toLocalDateStr() ? 'Jurnal Hari Ini' : `Jurnal ${formatSelectedDateLabel()}`,
+        week: 'Jurnal 7 Hari Terakhir',
+        month: 'Jurnal ' + new Date(state.selectedDate + 'T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+      };
+      document.getElementById('feedHeading').textContent = headingMap[state.timeframe];
+
+      // Apply search, type, and category filters
+      const filtered = periodEntries.filter(entry => {
+        if (state.typeFilter !== 'all' && entry.type !== state.typeFilter) return false;
+        if (state.categoryFilter !== 'all' && entry.category !== state.categoryFilter) return false;
+        if (state.searchQuery) {
+          const catMeta = getCategoryMeta(entry.type, entry.category);
+          const haystack = `${entry.title} ${entry.note || ''} ${catMeta.label}`.toLowerCase();
+          if (!haystack.includes(state.searchQuery)) return false;
+        }
+        return true;
+      });
+
+      // Sort newest date/time first
+      filtered.sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return (b.time || '00:00').localeCompare(a.time || '00:00');
+      });
+
+      document.getElementById('feedCountBadge').textContent = filtered.length;
+
+      const feedEl = document.getElementById('transactionFeed');
+
+      if (filtered.length === 0) {
+        const isFiltered = state.typeFilter !== 'all' || state.categoryFilter !== 'all' || state.searchQuery !== '';
+        feedEl.innerHTML = `
+          <div class="py-14 px-6 text-center rounded-3xl border border-dashed border-[var(--border-warm)] bg-[var(--bg-subtle)]/40">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto mb-3 text-xl">
+              ${isFiltered ? '🔍' : '📖'}
+            </div>
+            <h3 class="font-display font-bold text-base">${isFiltered ? 'Tidak ada catatan yang cocok' : 'Halaman masih kosong'}</h3>
+            <p class="text-xs text-[var(--text-secondary)] max-w-xs mx-auto mt-1 leading-relaxed">
+              ${isFiltered
+                ? 'Coba hapus kata kunci pencarian atau filter kategori untuk melihat semua catatan.'
+                : 'Ketuk kebiasaan cepat di sebelah kiri—seperti Kopi Pagi atau Makan Siang—untuk mencatat momen pertamamu.'}
+            </p>
+            ${isFiltered ? `
+              <button onclick="clearFilters()" class="tactile-btn mt-4 px-4 py-2 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold">
+                Reset Filter
+              </button>
+            ` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      feedEl.innerHTML = filtered.map(entry => {
+        const cat = getCategoryMeta(entry.type, entry.category);
+        const isIncome = entry.type === 'income';
+        const formattedTime = formatDisplayTime(entry.time);
+        const showDateTag = state.timeframe !== 'day';
+        const shortDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+
+        return `
+          <article class="entry-animate group flex items-center justify-between gap-3.5 p-4 rounded-3xl bg-[var(--bg-card-solid)]/90 hover:bg-[var(--bg-card-solid)] border border-[var(--border-warm)] shadow-sm hover:shadow-md transition-all">
+            <!-- Left Icon + Info -->
+            <div class="flex items-center gap-3.5 min-w-0">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105" style="background:${cat.bg}; color:${cat.color}">
+                ${cat.emoji}
+              </div>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-semibold text-sm sm:text-[15px] truncate">${escapeHtml(entry.title)}</h3>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap text-xs text-[var(--text-secondary)] mt-0.5">
+                  <span class="font-medium" style="color:${cat.color}">${cat.label}</span>
+                  <span>•</span>
+                  <span class="tabular-nums text-[var(--text-muted)]">${showDateTag ? `${shortDate}, ` : ''}${formattedTime}</span>
+                </div>
+
+                ${entry.note ? `
+                  <p class="text-xs text-[var(--text-muted)] mt-1 truncate max-w-md italic">“${escapeHtml(entry.note)}”</p>
+                ` : ''}
+              </div>
+            </div>
+
+            <!-- Right Amount + Tactile Edit/Delete Actions -->
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+              <span class="font-display font-bold text-sm sm:text-base tabular-nums ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#E05A47] dark:text-rose-400'}">
+                ${isIncome ? '+' : '-'}${formatMoney(entry.amount)}
+              </span>
+
+              <div class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <button
+                  onclick="startEditEntry('${entry.id}')"
+                  aria-label="Edit catatan"
+                  title="Edit"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
+                >
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button
+                  onclick="deleteEntry('${entry.id}')"
+                  aria-label="Hapus catatan"
+                  title="Hapus"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:text-rose-600 hover:bg-rose-500/10"
+                >
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderAll() {
+      const periodEntries = getEntriesForPeriod();
+      renderHeaderControls();
+      renderSummaryCards(periodEntries);
+      renderFormControls();
+      renderDonutChart(periodEntries);
+      updateFilterUI();
+      renderFeed();
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 9. UTILITIES, THEME & TOASTS
+    // =========================================================================
+    function formatDisplayTime(timeStr) {
+      if (!timeStr) return '';
+      const [hStr, mStr] = timeStr.split(':');
+      let h = parseInt(hStr, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return `${h}:${mStr} ${ampm}`;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      saveToStorage();
+    }
+
+    function cycleCurrency() {
+      state.currencyIndex = (state.currencyIndex + 1) % CURRENCIES.length;
+      saveToStorage();
+      renderAll();
+    }
+
+    function focusQuickAdd(forceType = null) {
+      if (forceType) setEntryType(forceType);
+      const section = document.getElementById('quickLogSection');
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => document.getElementById('amountInput').focus(), 250);
+    }
+
+    let toastTimer = null;
+    function showToast(message, showUndo = false) {
+      const container = document.getElementById('toastContainer');
+      document.getElementById('toastMessage').textContent = message;
+      document.getElementById('toastUndoBtn').classList.toggle('hidden', !showUndo);
+
+      container.classList.remove('opacity-0', 'translate-y-4');
+      lucide.createIcons();
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, showUndo ? 5000 : 2600);
+    }
+
+    function hideToast() {
+      document.getElementById('toastContainer').classList.add('opacity-0', 'translate-y-4');
+    }
+
+    // Keyboard Escape to cancel editing
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && state.editingId) {
+        cancelEdit();
+      }
+    });
+
+    // =========================================================================
+    // 10. INITIALIZE APP
+    // =========================================================================
+    loadFromStorage();
+    setDefaultTimeNow();
+    populateCategoryFilterDropdown();
+    renderAll();
+  </script>
+</body>
+</html>
