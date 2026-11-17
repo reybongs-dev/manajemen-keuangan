@@ -1912,10 +1912,131 @@
     // =========================================================================
     // 10. INITIALIZE APP
     // =========================================================================
-    loadFromStorage();
-    setDefaultTimeNow();
-    populateCategoryFilterDropdown();
-    renderAll();
+        function renderFeed() {
+      const periodEntries = getEntriesForPeriod();
+
+      // Update Feed Heading
+      const headingMap = {
+        day: state.selectedDate === toLocalDateStr() ? 'Jurnal Hari Ini' : `Jurnal ${formatSelectedDateLabel()}`,
+        week: 'Jurnal 7 Hari Terakhir',
+        month: 'Jurnal ' + new Date(state.selectedDate + 'T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+      };
+      document.getElementById('feedHeading').textContent = headingMap[state.timeframe];
+
+      // Apply search, type, and category filters
+      const filtered = periodEntries.filter(entry => {
+        if (state.typeFilter !== 'all' && entry.type !== state.typeFilter) return false;
+        if (state.categoryFilter !== 'all' && entry.category !== state.categoryFilter) return false;
+        if (state.searchQuery) {
+          const catMeta = getCategoryMeta(entry.type, entry.category);
+          const haystack = `${entry.title} ${entry.note || ''} ${catMeta.label}`.toLowerCase();
+          if (!haystack.includes(state.searchQuery)) return false;
+        }
+        return true;
+      });
+
+      // Sort newest date/time first
+      filtered.sort((a, b) => {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return (b.time || '00:00').localeCompare(a.time || '00:00');
+      });
+
+      document.getElementById('feedCountBadge').textContent = filtered.length;
+
+      const feedEl = document.getElementById('transactionFeed');
+
+      if (filtered.length === 0) {
+        const isFiltered = state.typeFilter !== 'all' || state.categoryFilter !== 'all' || state.searchQuery !== '';
+        feedEl.innerHTML = `
+          <div class="py-14 px-6 text-center rounded-3xl border border-dashed border-[var(--border-warm)] bg-[var(--bg-subtle)]/40">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto mb-3 text-xl">
+              ${isFiltered ? '🔍' : '📖'}
+            </div>
+            <h3 class="font-display font-bold text-base">${isFiltered ? 'Tidak ada catatan yang cocok' : 'Halaman masih kosong'}</h3>
+            <p class="text-xs text-[var(--text-secondary)] max-w-xs mx-auto mt-1 leading-relaxed">
+              ${isFiltered
+                ? 'Coba hapus kata kunci pencarian atau filter kategori untuk melihat semua catatan.'
+                : 'Ketuk kebiasaan cepat di sebelah kiri—seperti Kopi Pagi atau Makan Siang—untuk mencatat momen pertamamu.'}
+            </p>
+            ${isFiltered ? `
+              <button onclick="clearFilters()" class="tactile-btn mt-4 px-4 py-2 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold">
+                Reset Filter
+              </button>
+            ` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      feedEl.innerHTML = filtered.map(entry => {
+        const cat = getCategoryMeta(entry.type, entry.category);
+        const isIncome = entry.type === 'income';
+        const formattedTime = formatDisplayTime(entry.time);
+        const showDateTag = state.timeframe !== 'day';
+        const shortDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
+
+        return `
+          <article class="entry-animate group flex items-center justify-between gap-3.5 p-4 rounded-3xl bg-[var(--bg-card-solid)]/90 hover:bg-[var(--bg-card-solid)] border border-[var(--border-warm)] shadow-sm hover:shadow-md transition-all">
+            <!-- Left Icon + Info -->
+            <div class="flex items-center gap-3.5 min-w-0">
+              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105" style="background:${cat.bg}; color:${cat.color}">
+                ${cat.emoji}
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-display font-bold text-sm sm:text-[15px] truncate">${escapeHtml(entry.title)}</h3>
+                  ${showDateTag ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)]">${shortDate}</span>` : ''}
+                </div>
+                <div class="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] mt-0.5 flex-wrap">
+                  <span>${cat.label}</span>
+                  ${formattedTime ? `<span>•</span><span class="tabular-nums">${formattedTime}</span>` : ''}
+                </div>
+                ${entry.note ? `<p class="text-xs text-[var(--text-muted)] mt-1 truncate">${escapeHtml(entry.note)}</p>` : ''}
+              </div>
+            </div>
+
+            <!-- Right Amount + Actions -->
+            <div class="flex items-center gap-2.5 shrink-0">
+              <span class="font-display font-bold text-sm sm:text-base tabular-nums ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text-primary)]'}">
+                ${isIncome ? '+' : '-'}${formatMoney(entry.amount)}
+              </span>
+              <div class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onclick="startEditEntry('${entry.id}')"
+                  aria-label="Edit catatan"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
+                >
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button
+                  type="button"
+                  onclick="deleteEntry('${entry.id}')"
+                  aria-label="Hapus catatan"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:bg-rose-500/10 hover:text-rose-600"
+                >
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      const periodEntries = getEntriesForPeriod();
+      renderHeaderControls();
+      renderSummaryCards(periodEntries);
+      renderFormControls();
+      renderDonutChart(periodEntries);
+      renderFeed();
+      updateFilterUI();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
      // =========================================================================
     // 11. REGISTER OFFLINE SERVICE WORKER (PWA)
     // =========================================================================
