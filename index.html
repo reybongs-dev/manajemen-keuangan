@@ -128,7 +128,6 @@
     .hover\:text-\[var\(--text-primary\)\]:hover { color: var(--text-primary); }
     .hover\:text-rose-600:hover { color: #e11d48; }
     .hover\:underline:hover { text-decoration-line: underline; }
-
     /* Backgrounds */
     .bg-transparent { background-color: transparent; }
     .bg-white { background-color: #ffffff; }
@@ -252,8 +251,7 @@
     .justify-center { justify-content: center; }
     .justify-between { justify-content: space-between; }
     .self-start { align-self: flex-start; }
-
-    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
     .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .gap-1 { gap: 0.25rem; }
     .gap-1\.5 { gap: 0.375rem; }
@@ -418,10 +416,9 @@
       .lg\:col-span-7 { grid-column: span 7 / span 7; }
       .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
       .lg\:pb-12 { padding-bottom: 3rem; }
-                        }
-    </style>
-
-  <!-- Offline Lucide Icons Bundle (Tertanam Internal) -->
+    }
+  </style>
+    <!-- Offline Lucide Icons Bundle (Tertanam Internal) -->
   <script>
     window.lucide = {
       icons: {
@@ -587,7 +584,7 @@
       opacity: 0;
       cursor: pointer;
     }
-    </style>
+  </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-amber-200 selection:text-stone-900">
 
@@ -753,9 +750,8 @@
           </button>
         </div>
       </div>
-         </section>
-
-    <!-- MAIN ASYMMETRIC BENTO WORKSPACE (5 Cols Left / 7 Cols Right) -->
+              </section>
+      <!-- MAIN ASYMMETRIC BENTO WORKSPACE (5 Cols Left / 7 Cols Right) -->
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
       <!-- LEFT COLUMN (5 Cols): Quick-Log Studio + Category Donut Breakdown -->
@@ -898,8 +894,8 @@
               <!-- Populated dynamically -->
             </div>
           </div>
-          </section>
-        </div>
+        </section>
+      </div>
 
       <!-- RIGHT COLUMN (7 Cols): Live Transaction Feed + Search & Filter -->
       <section aria-label="Daftar Transaksi Langsung" class="lg:col-span-7 bento-card p-6 sm:p-7 shadow-tactile dark:shadow-tactile-dark">
@@ -970,8 +966,9 @@
 
       </section>
     </main>
-                </div>
-    <!-- MOBILE FLOATING QUICK-ADD ACTION BUTTON -->
+  </div>
+
+  <!-- MOBILE FLOATING QUICK-ADD ACTION BUTTON -->
   <button
     onclick="focusQuickAdd()"
     aria-label="Tambah Transaksi Cepat"
@@ -1070,7 +1067,8 @@
       lastDeleted: null,
       animatedValues: { income: 0, expense: 0, net: 0 }
     };
-        // =========================================================================
+
+    // =========================================================================
     // 3. REALISTIC STARTER DATA & PERSISTENCE
     // =========================================================================
     function generateStarterEntries() {
@@ -1129,7 +1127,6 @@
           amount: 28.40,
           note: 'Stok ulang dapur segar'
         },
-        // Yesterday sample entries so date navigation immediately shines
         {
           id: 'seed-6',
           date: yesterday,
@@ -1161,8 +1158,9 @@
           note: 'Dikembalikan ke kartu'
         }
       ];
-      }
-      function loadFromStorage() {
+    }
+
+    function loadFromStorage() {
       try {
         const savedPrefs = JSON.parse(localStorage.getItem(PREFS_KEY));
         if (savedPrefs) {
@@ -1203,8 +1201,9 @@
       saveToStorage();
       renderAll();
       showToast('Memulihkan jurnal contoh ✨');
-      }
-      // =========================================================================
+    }
+
+    // =========================================================================
     // 4. FORMATTING & NUMBER COUNTER ANIMATION
     // =========================================================================
     function getCurrency() {
@@ -1233,7 +1232,6 @@
       function tick(now) {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Cubic ease-out
         const eased = 1 - Math.pow(1 - progress, 3);
         const current = startValue + (targetValue - startValue) * eased;
 
@@ -1248,8 +1246,8 @@
       }
 
       requestAnimationFrame(tick);
-      }
-      
+    }
+
     // =========================================================================
     // 5. DATE & TIMEFRAME FILTERING LOGIC
     // =========================================================================
@@ -1262,7 +1260,6 @@
         }
         const entryDate = new Date(entry.date + 'T00:00:00');
         if (state.timeframe === 'week') {
-          // 7-day rolling window ending on selectedDate (inclusive)
           const diffDays = Math.round((sel - entryDate) / (1000 * 60 * 60 * 24));
           return diffDays >= 0 && diffDays < 7;
         }
@@ -1309,8 +1306,9 @@
     function setTimeframe(tf) {
       state.timeframe = tf;
       renderAll();
-      }
-      // =========================================================================
+    }
+
+    // =========================================================================
     // 6. QUICK-LOG FORM, HABITS & CRUD OPERATIONS
     // =========================================================================
     function setEntryType(type) {
@@ -1387,7 +1385,6 @@
         showToast(state.entryType === 'income' ? 'Pemasukan dicatat 🌱' : 'Pengeluaran dicatat ☕');
       }
 
-      // Reset inputs smoothly
       document.getElementById('amountInput').value = '';
       document.getElementById('titleInput').value = '';
       document.getElementById('noteInput').value = '';
@@ -1453,7 +1450,7 @@
       saveToStorage();
       renderAll();
       hideToast();
-      }
+    }
       // =========================================================================
     // 7. SEARCH & FILTER CONTROLS
     // =========================================================================
@@ -1545,7 +1542,6 @@
 
       const net = totalIncome - totalExpense;
 
-      // Dynamic timeframe labels
       const prefix = state.timeframe === 'day' ? 'Harian' : (state.timeframe === 'week' ? '7 Hari' : 'Bulanan');
       document.getElementById('netPeriodBadge').innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Arus Bersih ${prefix}</span>`;
       document.getElementById('incomeLabel').textContent = `Pemasukan ${prefix}`;
@@ -1558,7 +1554,6 @@
       document.getElementById('incomeCountBadge').textContent = `${incomeCount} pemasukan`;
       document.getElementById('expenseCountBadge').textContent = `${expenseCount} pengeluaran`;
 
-      // Net status pill & human narrative
       const statusPill = document.getElementById('netStatusPill');
       const insightText = document.getElementById('netInsightText');
       const savingsRateLabel = document.getElementById('savingsRateLabel');
@@ -1614,7 +1609,6 @@
         submitLabel.textContent = state.editingId ? 'Simpan Perubahan Pemasukan' : 'Tambah Pemasukan';
       }
 
-      // Render One-Tap Quick Habits
       const habits = QUICK_HABITS[state.entryType];
       const habitsBar = document.getElementById('quickHabitsBar');
       habitsBar.innerHTML = habits.map((h, idx) => `
@@ -1684,7 +1678,6 @@
         return;
       }
 
-      // Group by category
       const grouped = {};
       expenses.forEach(e => {
         grouped[e.category] = (grouped[e.category] || 0) + e.amount;
@@ -1785,7 +1778,6 @@
     function renderFeed() {
       const periodEntries = getEntriesForPeriod();
 
-      // Update Feed Heading
       const headingMap = {
         day: state.selectedDate === toLocalDateStr() ? 'Jurnal Hari Ini' : `Jurnal ${formatSelectedDateLabel()}`,
         week: 'Jurnal 7 Hari Terakhir',
@@ -1793,7 +1785,6 @@
       };
       document.getElementById('feedHeading').textContent = headingMap[state.timeframe];
 
-      // Apply search, type, and category filters
       const filtered = periodEntries.filter(entry => {
         if (state.typeFilter !== 'all' && entry.type !== state.typeFilter) return false;
         if (state.categoryFilter !== 'all' && entry.category !== state.categoryFilter) return false;
@@ -1805,7 +1796,6 @@
         return true;
       });
 
-      // Sort newest date/time first
       filtered.sort((a, b) => {
         if (a.date !== b.date) return b.date.localeCompare(a.date);
         return (b.time || '00:00').localeCompare(a.time || '00:00');
@@ -1850,7 +1840,65 @@
             <!-- Left Icon + Info -->
             <div class="flex items-center gap-3.5 min-w-0">
               <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105" style="background:${cat.bg}; color:${cat.color}">
-// =========================================================================
+                ${cat.emoji}
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="font-semibold text-sm sm:text-[15px] truncate">${escapeHtml(entry.title)}</h3>
+                  <span class="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)]">
+                    ${cat.label}
+                  </span>
+                </div>
+                ${entry.note ? `<p class="text-xs text-[var(--text-secondary)] truncate mt-0.5">${escapeHtml(entry.note)}</p>` : ''}
+                <p class="text-[11px] text-[var(--text-muted)] mt-1 tabular-nums">
+                  ${showDateTag ? `${shortDate} • ` : ''}${formattedTime}
+                </p>
+              </div>
+            </div>
+
+            <!-- Right Amount + Actions -->
+            <div class="flex flex-col items-end gap-1.5 shrink-0">
+              <span class="font-display font-bold text-sm sm:text-[15px] tabular-nums ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-[#E05A47] dark:text-rose-400'}">
+                ${isIncome ? '+' : '-'}${formatMoney(entry.amount)}
+              </span>
+              <div class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onclick="startEditEntry('${entry.id}')"
+                  aria-label="Edit catatan"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-muted)] hover:bg-amber-500/15 hover:text-[var(--text-primary)]"
+                >
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                </button>
+                <button
+                  type="button"
+                  onclick="deleteEntry('${entry.id}')"
+                  aria-label="Hapus catatan"
+                  class="tactile-btn p-2 rounded-xl text-[var(--text-muted)] hover:bg-rose-500/10 hover:text-rose-600"
+                >
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      const periodEntries = getEntriesForPeriod();
+      renderHeaderControls();
+      renderSummaryCards(periodEntries);
+      renderFormControls();
+      renderDonutChart(periodEntries);
+      renderFeed();
+      updateFilterUI();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    // =========================================================================
     // 9. UTILITIES, THEME & TOASTS
     // =========================================================================
     function formatDisplayTime(timeStr) {
@@ -1903,141 +1951,21 @@
       document.getElementById('toastContainer').classList.add('opacity-0', 'translate-y-4');
     }
 
-    // Keyboard Escape to cancel editing
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && state.editingId) {
         cancelEdit();
       }
     });
+
     // =========================================================================
     // 10. INITIALIZE APP
     // =========================================================================
-        function renderFeed() {
-      const periodEntries = getEntriesForPeriod();
+    loadFromStorage();
+    setDefaultTimeNow();
+    populateCategoryFilterDropdown();
+    renderAll();
 
-      // Update Feed Heading
-      const headingMap = {
-        day: state.selectedDate === toLocalDateStr() ? 'Jurnal Hari Ini' : `Jurnal ${formatSelectedDateLabel()}`,
-        week: 'Jurnal 7 Hari Terakhir',
-        month: 'Jurnal ' + new Date(state.selectedDate + 'T00:00:00').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
-      };
-      document.getElementById('feedHeading').textContent = headingMap[state.timeframe];
-
-      // Apply search, type, and category filters
-      const filtered = periodEntries.filter(entry => {
-        if (state.typeFilter !== 'all' && entry.type !== state.typeFilter) return false;
-        if (state.categoryFilter !== 'all' && entry.category !== state.categoryFilter) return false;
-        if (state.searchQuery) {
-          const catMeta = getCategoryMeta(entry.type, entry.category);
-          const haystack = `${entry.title} ${entry.note || ''} ${catMeta.label}`.toLowerCase();
-          if (!haystack.includes(state.searchQuery)) return false;
-        }
-        return true;
-      });
-
-      // Sort newest date/time first
-      filtered.sort((a, b) => {
-        if (a.date !== b.date) return b.date.localeCompare(a.date);
-        return (b.time || '00:00').localeCompare(a.time || '00:00');
-      });
-
-      document.getElementById('feedCountBadge').textContent = filtered.length;
-
-      const feedEl = document.getElementById('transactionFeed');
-
-      if (filtered.length === 0) {
-        const isFiltered = state.typeFilter !== 'all' || state.categoryFilter !== 'all' || state.searchQuery !== '';
-        feedEl.innerHTML = `
-          <div class="py-14 px-6 text-center rounded-3xl border border-dashed border-[var(--border-warm)] bg-[var(--bg-subtle)]/40">
-            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-300 flex items-center justify-center mx-auto mb-3 text-xl">
-              ${isFiltered ? '🔍' : '📖'}
-            </div>
-            <h3 class="font-display font-bold text-base">${isFiltered ? 'Tidak ada catatan yang cocok' : 'Halaman masih kosong'}</h3>
-            <p class="text-xs text-[var(--text-secondary)] max-w-xs mx-auto mt-1 leading-relaxed">
-              ${isFiltered
-                ? 'Coba hapus kata kunci pencarian atau filter kategori untuk melihat semua catatan.'
-                : 'Ketuk kebiasaan cepat di sebelah kiri—seperti Kopi Pagi atau Makan Siang—untuk mencatat momen pertamamu.'}
-            </p>
-            ${isFiltered ? `
-              <button onclick="clearFilters()" class="tactile-btn mt-4 px-4 py-2 rounded-2xl bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 text-xs font-bold">
-                Reset Filter
-              </button>
-            ` : ''}
-          </div>
-        `;
-        return;
-      }
-
-      feedEl.innerHTML = filtered.map(entry => {
-        const cat = getCategoryMeta(entry.type, entry.category);
-        const isIncome = entry.type === 'income';
-        const formattedTime = formatDisplayTime(entry.time);
-        const showDateTag = state.timeframe !== 'day';
-        const shortDate = new Date(entry.date + 'T00:00:00').toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
-
-        return `
-          <article class="entry-animate group flex items-center justify-between gap-3.5 p-4 rounded-3xl bg-[var(--bg-card-solid)]/90 hover:bg-[var(--bg-card-solid)] border border-[var(--border-warm)] shadow-sm hover:shadow-md transition-all">
-            <!-- Left Icon + Info -->
-            <div class="flex items-center gap-3.5 min-w-0">
-              <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-transform group-hover:scale-105" style="background:${cat.bg}; color:${cat.color}">
-                ${cat.emoji}
-              </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h3 class="font-display font-bold text-sm sm:text-[15px] truncate">${escapeHtml(entry.title)}</h3>
-                  ${showDateTag ? `<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[var(--bg-subtle)] text-[var(--text-secondary)]">${shortDate}</span>` : ''}
-                </div>
-                <div class="flex items-center gap-1.5 text-xs text-[var(--text-secondary)] mt-0.5 flex-wrap">
-                  <span>${cat.label}</span>
-                  ${formattedTime ? `<span>•</span><span class="tabular-nums">${formattedTime}</span>` : ''}
-                </div>
-                ${entry.note ? `<p class="text-xs text-[var(--text-muted)] mt-1 truncate">${escapeHtml(entry.note)}</p>` : ''}
-              </div>
-            </div>
-
-            <!-- Right Amount + Actions -->
-            <div class="flex items-center gap-2.5 shrink-0">
-              <span class="font-display font-bold text-sm sm:text-base tabular-nums ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-[var(--text-primary)]'}">
-                ${isIncome ? '+' : '-'}${formatMoney(entry.amount)}
-              </span>
-              <div class="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                <button
-                  type="button"
-                  onclick="startEditEntry('${entry.id}')"
-                  aria-label="Edit catatan"
-                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
-                >
-                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                </button>
-                <button
-                  type="button"
-                  onclick="deleteEntry('${entry.id}')"
-                  aria-label="Hapus catatan"
-                  class="tactile-btn p-2 rounded-xl text-[var(--text-secondary)] hover:bg-rose-500/10 hover:text-rose-600"
-                >
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
-              </div>
-            </div>
-          </article>
-        `;
-      }).join('');
-    }
-
-    function renderAll() {
-      const periodEntries = getEntriesForPeriod();
-      renderHeaderControls();
-      renderSummaryCards(periodEntries);
-      renderFormControls();
-      renderDonutChart(periodEntries);
-      renderFeed();
-      updateFilterUI();
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-    }
-
-     // =========================================================================
+    // =========================================================================
     // 11. REGISTER OFFLINE SERVICE WORKER (PWA)
     // =========================================================================
     if ('serviceWorker' in navigator) {
@@ -2050,4 +1978,3 @@
   </script>
 </body>
 </html>
-             
