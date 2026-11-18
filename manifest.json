@@ -1,7 +1,7 @@
 {
   "name": "Nook — Jurnal Pemasukan & Pengeluaran Harian",
   "short_name": "Nook",
-  "description": "Catatan keuangan harian yang hangat & manusiawi",
+  "description": "Catatan keuangan harian",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
